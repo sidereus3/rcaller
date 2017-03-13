@@ -37,6 +37,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -45,9 +46,11 @@ import java.util.ArrayList;
 public class ROutputParser {
 
     protected File XMLFile;
+    protected List<File> listXMLFile = new ArrayList<>();
     protected DocumentBuilderFactory factory;
     protected DocumentBuilder builder;
     protected Document document;
+    protected List<Document> listDocument = new ArrayList<>();
     final private String variable_tag_name = "variable";
 
     public Document getDocument() {
@@ -72,6 +75,44 @@ public class ROutputParser {
 
     public void setXMLFile(File XMLFile) {
         this.XMLFile = XMLFile;
+    }
+
+    public void setListXMLFiles(List<File> listXMLFile) {
+        this.listXMLFile = listXMLFile;
+    }
+
+    public void parseList() throws ParseException {
+        if (this.listXMLFile.size() == 0) {
+            throw new ParseException("Can not parse output: The generated file " + this.listXMLFile.toString() + " is empty");
+        }
+
+        for (File file : listXMLFile) {
+            factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder tmpbuilder;
+            try {
+                tmpbuilder = factory.newDocumentBuilder();
+            } catch (ParserConfigurationException e) {
+                throw new ParseException("Can not create parser builder: " + e.toString());
+            }
+            Document tmpDocument;
+            try {
+                FileInputStream in = new FileInputStream(file);
+                InputSource is = new InputSource(in);
+                is.setEncoding("UTF-8");
+                tmpDocument = tmpbuilder.parse(is);
+            } catch (Exception e) {
+                StackTraceElement[] frames = e.getStackTrace();
+                String msgE = "";
+                for (StackTraceElement frame : frames) {
+                    msgE += frame.getClassName() + "-" + frame.getMethodName() + "-" + String.valueOf(frame.getLineNumber());
+                }
+                System.out.println(e + msgE);
+                throw new XMLParseException("Can not parse the R output: " + e.toString());
+            }
+
+            tmpDocument.getDocumentElement().normalize();
+            listDocument.add(tmpDocument);
+        }
     }
 
     public void parse() throws ParseException {
@@ -151,13 +192,26 @@ public class ROutputParser {
     }
 
     public NodeList getValueNodes(String name) {
-        NodeList nodes = document.getElementsByTagName(variable_tag_name);
         NodeList content = null;
-        for (int i = 0; i < nodes.getLength(); i++) {
-            Node node = nodes.item(i);
-            if (node.getAttributes().getNamedItem("name").getNodeValue().equals(name)) {
-                content = node.getChildNodes();
-                break;
+        if (listDocument.isEmpty()) {
+            NodeList nodes = document.getElementsByTagName(variable_tag_name);
+            for (int i = 0; i < nodes.getLength(); i++) {
+                Node node = nodes.item(i);
+                if (node.getAttributes().getNamedItem("name").getNodeValue().equals(name)) {
+                    content = node.getChildNodes();
+                    break;
+                }
+            }
+        } else {
+            for (Document tmpDocument : listDocument) {
+                NodeList nodes = tmpDocument.getElementsByTagName(variable_tag_name);
+                for (int i = 0; i < nodes.getLength(); i++) {
+                    Node node = nodes.item(i);
+                    if (node.getAttributes().getNamedItem("name").getNodeValue().equals(name)) {
+                        content = node.getChildNodes();
+                        break;
+                    }
+                }
             }
         }
         return (content);

@@ -34,6 +34,8 @@ import com.github.rcaller.graphics.GraphicsTheme;
 import com.github.rcaller.util.Globals;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -393,15 +395,44 @@ public class RCaller {
     public void runAndReturnResult(String var) throws ExecutionException {
         File outputFile = tempFileService.createOutputFile();
         rCode.appendStandardCodeToAppend(outputFile, var);
+
         runRCode();
 
         parser.setXMLFile(outputFile);
+
         try {
             parser.parse();
         } catch (Exception e) {
             Logger.getLogger(RCaller.class.getName()).log(Level.INFO, rCode.toString());
             throw new ParseException("Can not handle R results due to : " + e.getMessage());
         }
+
+    }
+    public void runAndReturnResult(String... vars) {
+
+        List<File> outputFileList = new ArrayList<>();
+        for (String tmpString : vars) {
+            File outputFile = null;
+            try {
+                outputFile = tempFileService.createTempFile("out", tmpString);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            rCode.appendStandardCodeToAppend(outputFile, tmpString);
+            outputFileList.add(outputFile);
+        }
+
+        runRCode();
+
+        parser.setListXMLFiles(outputFileList);
+
+        try {
+            parser.parseList();
+        } catch (Exception e) {
+            Logger.getLogger(RCaller.class.getName()).log(Level.INFO, rCode.toString());
+            throw new ParseException("Can not handle R results due to : " + e.getMessage());
+        }
+
     }
 
     public void redirectROutputToFile(String name, boolean appendToExisting) throws FileNotFoundException {

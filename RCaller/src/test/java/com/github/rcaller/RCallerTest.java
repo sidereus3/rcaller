@@ -73,6 +73,31 @@ public class RCallerTest {
     }
 
     @Test
+    public void testMultipleOutputIntArrays() {
+        RCaller rcaller = RCaller.create();
+        RCode code = RCode.create();
+
+        code.addIntArray("x_i", new int[]{1, 2, 3, 4, 5, 6});
+        code.addRCode("x_i2 <- x_i * 2");
+        code.addRCode("x_i3 <- x_i + 2");
+        rcaller.setRCode(code);
+        rcaller.runAndReturnResult("x_i2", "x_i3");
+        int[] actual = rcaller.getParser().getAsIntArray("x_i2");
+        int[] actual2 = rcaller.getParser().getAsIntArray("x_i3");
+        int[] expected = new int[]{2, 4, 6, 8, 10, 12};
+        int[] expected2 = new int[]{3, 4, 5, 6, 7, 8};
+        assertEquals(expected.length, actual.length);
+        assertEquals(expected2.length, actual2.length);
+        for (int i = 0; i < actual.length; i++) {
+            assertEquals(actual[i], expected[i]);
+        }
+        for (int i = 0; i < actual2.length; i++) {
+            assertEquals(actual2[i], expected2[i]);
+        }
+        rcaller.deleteTempFiles();
+    }
+
+    @Test
     public void testDoubleArrays() {
         double delta = 0.0000001;
         RCaller rcaller = RCaller.create();
