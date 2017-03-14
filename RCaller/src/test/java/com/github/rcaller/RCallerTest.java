@@ -27,6 +27,8 @@ package com.github.rcaller;
 
 import com.github.rcaller.rstuff.RCaller;
 import com.github.rcaller.rstuff.RCode;
+import com.github.rcaller.rstuff.RMultipleOutputParser;
+import com.github.rcaller.rstuff.ROutputParser;
 import org.junit.*;
 
 import java.io.File;
@@ -74,7 +76,8 @@ public class RCallerTest {
 
     @Test
     public void testMultipleOutputIntArrays() {
-        RCaller rcaller = RCaller.create();
+        ROutputParser parser = new RMultipleOutputParser();
+        RCaller rcaller = RCaller.create(parser);
         RCode code = RCode.create();
 
         code.addIntArray("x_i", new int[]{1, 2, 3, 4, 5, 6});
@@ -94,6 +97,7 @@ public class RCallerTest {
         for (int i = 0; i < actual2.length; i++) {
             assertEquals(actual2[i], expected2[i]);
         }
+        System.out.println(rcaller.getParser().getXMLFile("x_i3").getAbsolutePath());
         rcaller.deleteTempFiles();
     }
 

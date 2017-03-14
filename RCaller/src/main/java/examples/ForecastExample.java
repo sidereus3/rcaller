@@ -45,7 +45,7 @@ public class ForecastExample {
        * It is good to have a look at the XML file
        * for having info about which variables are passed to result
        */
-      System.out.println(caller.getParser().getXMLFileAsString());
+      System.out.println(caller.getParser().getXMLFileAsString("myResult"));
 
       double[] upValues = caller.getParser().getAsDoubleArray("upper");
       double[] loValues = caller.getParser().getAsDoubleArray("lower");

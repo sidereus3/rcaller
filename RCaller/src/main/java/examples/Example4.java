@@ -66,7 +66,7 @@ public class Example4 {
        * Getting R results as XML
        * for debugging issues.
        */
-      System.out.println(caller.getParser().getXMLFileAsString());
+      System.out.println(caller.getParser().getXMLFileAsString("ols"));
     } catch (Exception e) {
       Logger.getLogger(Example4.class.getName()).log(Level.SEVERE, e.getMessage());
     }

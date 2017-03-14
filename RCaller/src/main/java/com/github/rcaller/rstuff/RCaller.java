@@ -82,17 +82,27 @@ public class RCaller {
      * @return default RCaller object
      */
     public static RCaller create() {
-        return new RCaller(RCode.create(), new ROutputParser(), new RStreamHandler(null, "Output"), new RStreamHandler(null, "Error"), new MessageSaver(), new TempFileService(), RCallerOptions.create());
+        return new RCaller(RCode.create(), new RSingleOutputParser(), new RStreamHandler(null, "Output"), new RStreamHandler(null, "Error"), new MessageSaver(), new TempFileService(), RCallerOptions.create());
+    }
+
+    public static RCaller create(ROutputParser parser) {
+        return new RCaller(RCode.create(), parser, new RStreamHandler(null, "Output"), new RStreamHandler(null, "Error"), new MessageSaver(), new TempFileService(), RCallerOptions.create());
     }
 
     public static RCaller create(RCallerOptions rCallerOptions) {
-        return new RCaller(RCode.create(), new ROutputParser(), new RStreamHandler(null, "Output"), new RStreamHandler(null, "Error"), new MessageSaver(), new TempFileService(), rCallerOptions);
+        return new RCaller(RCode.create(), new RSingleOutputParser(), new RStreamHandler(null, "Output"), new RStreamHandler(null, "Error"), new MessageSaver(), new TempFileService(), rCallerOptions);
     }
 
+    public static RCaller create(ROutputParser parser, RCallerOptions rCallerOptions) {
+        return new RCaller(RCode.create(), parser, new RStreamHandler(null, "Output"), new RStreamHandler(null, "Error"), new MessageSaver(), new TempFileService(), rCallerOptions);
+    }
     public static RCaller create(RCode rcode, RCallerOptions rCallerOptions) {
-        return new RCaller(rcode, new ROutputParser(), new RStreamHandler(null, "Output"), new RStreamHandler(null, "Error"), new MessageSaver(), new TempFileService(), rCallerOptions);
+        return new RCaller(rcode, new RSingleOutputParser(), new RStreamHandler(null, "Output"), new RStreamHandler(null, "Error"), new MessageSaver(), new TempFileService(), rCallerOptions);
     }
 
+    public static RCaller create(RCode rcode, ROutputParser parser, RCallerOptions rCallerOptions) {
+        return new RCaller(rcode, parser, new RStreamHandler(null, "Output"), new RStreamHandler(null, "Error"), new MessageSaver(), new TempFileService(), rCallerOptions);
+    }
 
     /**
      * Stops the threads that are emptying the output and error streams of the
@@ -427,7 +437,7 @@ public class RCaller {
         parser.setListXMLFiles(outputFileList);
 
         try {
-            parser.parseList();
+            parser.parse();
         } catch (Exception e) {
             Logger.getLogger(RCaller.class.getName()).log(Level.INFO, rCode.toString());
             throw new ParseException("Can not handle R results due to : " + e.getMessage());
